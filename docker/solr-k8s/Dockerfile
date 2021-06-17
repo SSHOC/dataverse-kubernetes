@@ -4,8 +4,8 @@
 # You may obtain a copy of the License at
 # http://www.apache.org/licenses/LICENSE-2.0
 
-FROM solr:8.8.2
-# FROM solr:8.0
+# FROM solr:8.8.2
+FROM solr:7.7
 
 LABEL maintainer="FDM FZJ <forschungsdaten@fz-juelich.de>"
 
@@ -17,6 +17,7 @@ ENV SOLR_OPTS="-Dsolr.jetty.request.header.size=102400"\
     COLLECTION_DIR=/opt/solr/server/solr/${COLLECTION}\
     SCHEMA_DIR=/schema\
     SCRIPT_DIR=/scripts\
+    SOLR_USER="solr"\
     DATAVERSE_PKG=https://github.com/IQSS/dataverse/releases/download/v${VERSION}/dvinstall.zip
 ENV SCHEMA_SCRIPT_DIR=${SCRIPT_DIR}/schema
 
@@ -30,7 +31,7 @@ RUN wget --no-verbose -O /tini https://github.com/krallin/tini/releases/download
     chmod +x /tini
 
 
-# USER ${SOLR_USER}
+USER ${SOLR_USER}
 
 # Dataverse uses a **hardcoded** core name "collection1", so we need to use it.
 # 1) Create core directory
@@ -64,3 +65,6 @@ RUN wget --no-verbose -O webhook.tar.gz https://github.com/adnanh/webhook/releas
     rm webhook.tar.gz
 COPY --chown=solr:solr schema/ ${SCHEMA_SCRIPT_DIR}
 RUN chmod +x ${SCHEMA_SCRIPT_DIR}/*.sh
+
+
+
