@@ -42,7 +42,7 @@ chmod 0600 ${HOME_DIR}/.pgpass
 
 # 1.) Load SQL data
 if [ -s "${HOME_DIR}/dvinstall/reference_data.sql" ]; then
-  echp "1. Load reference SQL data"
+  echo "1. Load reference SQL data"
   psql -h ${POSTGRES_SERVER} -U ${POSTGRES_USER} ${POSTGRES_DATABASE} < ${HOME_DIR}/dvinstall/reference_data.sql
 fi
 
