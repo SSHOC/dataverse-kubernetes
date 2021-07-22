@@ -5,7 +5,7 @@ metadata:
   name: dataverse
   labels:
     app.kubernetes.io/name: dataverse
-    app.kubernetes.io/version: "1.1"
+    app.kubernetes.io/version: "5.4.1"
     app.kubernetes.io/component: appserver
     app.kubernetes.io/part-of: dataverse
     app.kubernetes.io/managed-by: kubectl
@@ -45,16 +45,6 @@ spec:
               value: solr:8983
             - name: SOLR_USER
               value: solr
-
-            # - name: DATAVERSE_DB_USER
-            #   value: dataverse
-            # - name: DATAVERSE_DB_NAME
-            #   value: dataverse
-            # - name: POSTGRES_PASSWORD
-            #   value: changeme
-            # - name: POSTGRES_SERVER
-            #   value: postgresql
-
 
             - name: DATAVERSE_DB_PASSWORD
               valueFrom:
