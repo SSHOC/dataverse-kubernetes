@@ -8,4 +8,4 @@ resources:
 
 images:
   - name: steinsteiny/solr-k8s
-    newTag: "7-5.4.1"
+    newTag: "7"
