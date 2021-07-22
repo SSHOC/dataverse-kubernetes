@@ -25,20 +25,14 @@ spec:
           env:
             - name: DATAVERSE_DB_HOST
               value: postgresql
-            - name: DATAVERSE_DB_USER
-              value: dataverse
-            - name: DATAVERSE_DB_PASSWORD
-              value: changeme
-            - name: DATAVERSE_DB_NAME
-              value: dataverse
-            - name: POSTGRES_PASSWORD
-              value: changeme           
-            - name: POSTGRES_SERVER
-              value: postgresql
-
-
             - name: SOLR_SERVICE_HOST
-              value: solr:8983            
+              value: solr:8983
+            - name: DATAVERSE_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: dataverse-postgresql
+                  key: password
+                  optional: true
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
@@ -71,12 +65,12 @@ spec:
             'until pg_isready -h "${POSTGRESQL_SERVICE_HOST}" -p "${POSTGRESQL_SERVICE_PORT}";
             do echo waiting for database; sleep 3; done;']
         - name: check-solr-ready
-          image: giantswarm/tiny-tools
+          image: curlimages/curl
           command: ['sh', '-c',
             'until curl -sS -f "http://${SOLR_SERVICE_HOST}:${SOLR_SERVICE_PORT}/solr/collection1/admin/ping" 2>&1 | grep "status.:.OK";
             do echo waiting for solr; sleep 3; done;']
         - name: check-dataverse-ready
-          image: giantswarm/tiny-tools
+          image: curlimages/curl
           command: ['sh', '-c',
             'until curl -sS -f "http://${DATAVERSE_SERVICE_HOST}:${DATAVERSE_SERVICE_PORT_HTTP}/robots.txt" -m 2 2>&1 > /dev/null;
             do echo waiting for dataverse; sleep 15; done;']

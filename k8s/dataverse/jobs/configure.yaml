@@ -32,7 +32,7 @@ spec:
               readOnly: true
       initContainers:
         - name: check-dataverse-ready
-          image: giantswarm/tiny-tools
+          image: curlimages/curl
           command: ['sh', '-c',
             'until curl -sS -f "http://${DATAVERSE_SERVICE_HOST}:${DATAVERSE_SERVICE_PORT_HTTP}/robots.txt" -m 2 2>&1 > /dev/null;
             do echo waiting for dataverse; sleep 15; done;']
