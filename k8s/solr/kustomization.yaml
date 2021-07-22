@@ -7,5 +7,5 @@ resources:
   - svc.yaml
 
 images:
-  - name: steinsteiny/solr-k8s
+  - name: sshoc/solr-k8s
     newTag: "7"

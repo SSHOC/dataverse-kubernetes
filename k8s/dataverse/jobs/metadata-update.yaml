@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: metadata-update
-          image: steinsteiny/dataverse:5.4.1
+          image: sshoc/dataverse-k8s:5.4.1
           command: ['scripts/metadata-update.sh']
           envFrom:
             - configMapRef:
