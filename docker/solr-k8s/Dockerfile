@@ -4,13 +4,12 @@
 # You may obtain a copy of the License at
 # http://www.apache.org/licenses/LICENSE-2.0
 
-# FROM solr:8.8.2
 FROM solr:7.7
 
 LABEL maintainer="FDM FZJ <forschungsdaten@fz-juelich.de>"
 
-ARG WEBHOOK_VERSION=2.6.11
-ARG TINI_VERSION=v0.18.0
+ARG WEBHOOK_VERSION=2.8.0
+ARG TINI_VERSION=v0.19.0
 ARG VERSION=5.4.1
 ARG COLLECTION=collection1
 ENV SOLR_OPTS="-Dsolr.jetty.request.header.size=102400"\
@@ -65,6 +64,4 @@ RUN wget --no-verbose -O webhook.tar.gz https://github.com/adnanh/webhook/releas
     rm webhook.tar.gz
 COPY --chown=solr:solr schema/ ${SCHEMA_SCRIPT_DIR}
 RUN chmod +x ${SCHEMA_SCRIPT_DIR}/*.sh
-
-
 
