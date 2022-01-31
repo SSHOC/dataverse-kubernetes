@@ -6,7 +6,7 @@
 # It initializes the most basic settings and
 # creates root dataverse and admin account.
 ################################################################################
-
+echo "FILENAME: bootstrap-job.sh"
 # Fail on any error
 set -euo pipefail
 # Include some sane defaults
@@ -36,27 +36,34 @@ if [ -s "${SECRETS_DIR}/admin/password" ]; then
   ADMIN_PASSWORD=`cat ${SECRETS_DIR}/admin/password`
 fi
 
-# Drop the Postgres credentials into .pgpass
+echo "Drop the Postgres credentials into .pgpass"
 echo "${POSTGRES_SERVER}:*:*:${POSTGRES_USER}:`cat ${SECRETS_DIR}/db/password`" > ${HOME_DIR}/.pgpass
 chmod 0600 ${HOME_DIR}/.pgpass
 
 # 1.) Load SQL data
-psql -h ${POSTGRES_SERVER} -U ${POSTGRES_USER} ${POSTGRES_DATABASE} < ${HOME_DIR}/dvinstall/reference_data.sql
+if [ -s "${HOME_DIR}/dvinstall/reference_data.sql" ]; then
+  echo "1. Load reference SQL data"
+  psql -h ${POSTGRES_SERVER} -U ${POSTGRES_USER} ${POSTGRES_DATABASE} < ${HOME_DIR}/dvinstall/reference_data.sql
+fi
 
 # 2) Initialize common data structures to make Dataverse usable
 cd ${HOME_DIR}/dvinstall
 # 2a) Patch load scripts with k8s based URL
+echo "2a. Patch setup scripts with k8s based URL"
 sed -i -e "s#localhost:8080#${DATAVERSE_SERVICE_HOST}:${DATAVERSE_SERVICE_PORT_HTTP}#" setup-*.sh
 # 2b) Patch user and root dataverse JSON with contact email
 sed -i -e "s#root@mailinator.com#${CONTACT_MAIL}#" data/dv-root.json
 sed -i -e "s#dataverse@mailinator.com#${CONTACT_MAIL}#" data/user-admin.json
 # 2c) Use script(s) to bootstrap the instance.
+echo "2c. Run setup-all.sh to bootstrap the instance."
 ./setup-all.sh --insecure -p="${ADMIN_PASSWORD:-admin}"
 
 # 4.) Configure Solr location
+echo "4. Configure Solr location"
 curl -sS -X PUT -d "${SOLR_SERVICE_HOST}:${SOLR_SERVICE_PORT}" "${DATAVERSE_URL}/api/admin/settings/:SolrHostColonPort"
 
 # 5.) Provision builtin users key to enable creation of more builtin users
+echo "5. Provision builtin users key to enable creation of more builtin users"
 if [ -s "${SECRETS_DIR}/api/userskey" ]; then
   curl -sS -X PUT -d "`cat ${SECRETS_DIR}/api/userskey`" "${DATAVERSE_URL}/api/admin/settings/BuiltinUsers.KEY"
 else
@@ -64,9 +71,11 @@ else
 fi
 
 # 6.) Block access to the API endpoints, but allow for request with key from secret
+echo "6. Block access to the API endpoints, but allow for request with key from secret"
 curl -sS -X PUT -d "`cat ${SECRETS_DIR}/api/key`" "${DATAVERSE_URL}/api/admin/settings/:BlockedApiKey"
 curl -sS -X PUT -d unblock-key "${DATAVERSE_URL}/api/admin/settings/:BlockedApiPolicy"
 curl -sS -X PUT -d admin,test "${DATAVERSE_URL}/api/admin/settings/:BlockedApiEndpoints"
 
 # Initial configuration of Dataverse
+echo "Initial configuration of Dataverse (config-job.sh)."
 exec ${SCRIPT_DIR}/config-job.sh

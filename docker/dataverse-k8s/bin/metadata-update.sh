@@ -2,7 +2,7 @@
 ################################################################################
 # This script is used to update metadata blocks from release and custom files.
 ################################################################################
-
+echo "FILENAME: metadata-update.sh"
 # Fail on any error
 set -euo pipefail
 DATAVERSE_SERVICE_HOST=${DATAVERSE_SERVICE_HOST:-"dataverse"}
@@ -30,7 +30,7 @@ fail=1
 for mdb in "${BUILTIN[@]}"; do
   grep "${mdb}" <<< "${TSVS}" > /dev/null 2>&1 || miss=0
   if [ $miss -eq 0 ]; then
-    echo "ERROR: could not find builtin (release) metadata block file ${mdb} within ${METADATA_DIR} or ${HOME_DIR}"
+    echo "ERROR: could not find mandatory builtin (release) metadata block file ${mdb} within ${METADATA_DIR} or ${HOME_DIR}"
     fail=0
     miss=1
   fi
@@ -44,7 +44,7 @@ fi
 
 # Load metadata blocks
 while IFS= read -r TSV; do
-  echo -n "Loading ${TSV}: "
+  echo -n "Sending to DV API/Loading ${TSV}: "
   OUTPUT=`curl -sS -f -H "Content-type: text/tab-separated-values" -X POST --data-binary "@${TSV}" "${DATAVERSE_URL}/api/admin/datasetfield/load?unblock-key=${API_KEY}" 2>&1 || echo -n ""`
   echo "$OUTPUT" | jq -rM '.status' 2>/dev/null || echo -e 'FAILED\n' "$OUTPUT"
 done <<< "${TSVS}"

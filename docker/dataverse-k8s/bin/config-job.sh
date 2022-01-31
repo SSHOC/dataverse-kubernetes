@@ -3,7 +3,7 @@
 # This script is used to configure a Dataverse installation from a ConfigMap.
 # It is used solely for changing Database settings!
 ################################################################################
-
+echo "FILENAME: config-job.sh"
 # Fail on any error
 set -euo pipefail
 DATAVERSE_SERVICE_HOST=${DATAVERSE_SERVICE_HOST:-"dataverse"}
@@ -38,7 +38,7 @@ if `env | grep -Ee '^db_' 2>&1 > /dev/null`; then
       fi
   done
 else
-  echo "--- none found ---"
+  echo -n "--- none found ---"
 fi
 
 # Parse and configure authentication providers
