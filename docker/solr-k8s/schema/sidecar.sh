@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -euo pipefail
+echo "FILENAME: sidecar.sh"
 
 # See http://guides.dataverse.org/en/latest/admin/metadatacustomization.html#updating-the-solr-schema
 # for details on the following environment variables.

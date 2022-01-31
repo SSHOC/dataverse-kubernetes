@@ -2,7 +2,7 @@
   {
     "id": "update-schema",
     "execute-command": "./updateSchemaMDB.sh",
-    "command-working-directory": "/scripts/schema/",
+    "command-working-directory": "/var/solr/data/scripts/schema",
     "response-message": "Schema update triggered.",
     "include-command-output-in-response": true,
     "include-command-output-in-response-on-error": true,
