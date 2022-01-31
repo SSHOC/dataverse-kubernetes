@@ -40,7 +40,7 @@ RUN mkdir -p ${DATA_DIR} ${METADATA_DIR} ${DOCROOT_DIR} ${SECRETS_DIR} ${DUMPS_D
 
 # Install prerequisites:
 RUN apt-get -qq update && \
-    DEBIAN_FRONTEND=noninteractive apt-get -qqy install postgresql-client jq imagemagick curl wget unzip ed bc original-awk
+    DEBIAN_FRONTEND=noninteractive apt-get -qqy install postgresql-client jq imagemagick curl wget unzip zip ed bc original-awk
 
 # Install esh template engine from Github:
 RUN wget --no-verbose -O esh https://raw.githubusercontent.com/jirutka/esh/v0.3.1/esh && \
