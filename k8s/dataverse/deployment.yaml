@@ -5,7 +5,7 @@ metadata:
   name: dataverse
   labels:
     app.kubernetes.io/name: dataverse
-    app.kubernetes.io/version: "4.20"
+    app.kubernetes.io/version: "5.9"
     app.kubernetes.io/component: appserver
     app.kubernetes.io/part-of: dataverse
     app.kubernetes.io/managed-by: kubectl
@@ -26,18 +26,32 @@ spec:
     spec:
       containers:
         - name: dataverse
-          image: iqss/dataverse-k8s
+          image: sshoc/dataverse-k8s:5.9
+          imagePullPolicy: Always
           resources:
             requests:
-              memory: "2Gi"
+              memory: 2Gi
             limits:
-              memory: "4Gi"
+              memory: 4Gi
           ports:
             - containerPort: 8080
           envFrom:
             - configMapRef:
                 name: dataverse
           env:
+            - name: DATAVERSE_DB_HOST
+              value: postgresql
+            - name: SOLR_SERVICE_HOST
+              value: solr
+            - name: SOLR_USER
+              value: solr
+
+            - name: DATAVERSE_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: dataverse-postgresql
+                  key: password
+                  optional: true
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
@@ -54,7 +68,7 @@ spec:
             - name: files
               mountPath: /data
             - name: docroot
-              mountPath: /docroot
+              mountPath: /opt/docroot
             - name: heapdumps
               mountPath: /dumps
             - name: db-secret
@@ -73,22 +87,22 @@ spec:
       initContainers:
         - name: volume-mount-hack
           image: giantswarm/tiny-tools
-          command: ["sh", "-c", "chown -c 1000:1000 /data /docroot /uploads"]
+          command: ["sh", "-c", "chown -c 1000:1000 /data /opt/docroot /uploads"]
           volumeMounts:
             - name: files
               mountPath: /data
             - name: docroot
-              mountPath: /docroot
+              mountPath: /opt/docroot
             # This is here because of IQSS/dataverse-kubernetes#177. TBR for #178
             - name: primefaces-upload
               mountPath: /uploads
         - name: check-db-ready
-          image: postgres:9.6
+          image: postgres:10.13
           command: ['sh', '-c',
             'until pg_isready -h "${POSTGRESQL_SERVICE_HOST}" -p "${POSTGRESQL_SERVICE_PORT}";
             do echo waiting for database; sleep 3; done;']
         - name: check-solr-ready
-          image: giantswarm/tiny-tools
+          image: curlimages/curl
           command: ['sh', '-c',
             'until curl -sS -f "http://${SOLR_SERVICE_HOST}:${SOLR_SERVICE_PORT}/solr/collection1/admin/ping" 2>&1 | grep "status.:.OK";
             do echo waiting for solr; sleep 3; done;']

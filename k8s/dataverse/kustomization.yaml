@@ -6,6 +6,3 @@ resources:
   - pvc.yaml
   - svc.yaml
 
-images:
-  - name: iqss/dataverse-k8s
-    newTag: "4.20"

@@ -2,7 +2,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  generateName: metadata-update-dataverse-
+  generateName: metadata-update-dataverse-cmm
   labels:
     app.kubernetes.io/name: metadata-update
     app.kubernetes.io/version: "1.0"
@@ -27,6 +27,9 @@ spec:
             - name: api-secret
               mountPath: "/secrets/api"
               readOnly: true
+            - name: custom-metadata
+              mountPath: /metadata
+              readOnly: true
       initContainers:
         - name: check-solr-ready
           image: curlimages/curl
@@ -38,9 +41,24 @@ spec:
           command: ['sh', '-c',
             'until curl -sS -f "http://${DATAVERSE_SERVICE_HOST}:${DATAVERSE_SERVICE_PORT_HTTP}/robots.txt" -m 2 2>&1 > /dev/null;
             do echo waiting for dataverse; sleep 15; done;']
+        - name: get-metadata
+          image: giantswarm/tiny-tools
+          command:
+            - "curl"
+          args:
+            - "-sSo"
+            - "/metadata/cessda_cmm.tsv"
+            - "https://raw.githubusercontent.com/ekoi/speeltuin/master/resources/CMM_Custom_MetadataBlock.tsv"
+            # - "/metadata/ccvocdemo.tsv"
+            # - "https://raw.githubusercontent.com/gdcc/dataverse-external-vocab-support/main/examples/metadatablocks/cvocdemo.tsv"
+          volumeMounts:
+            - name: custom-metadata
+              mountPath: /metadata
       volumes:
         - name: api-secret
           secret:
             secretName: dataverse-api
+        - name: custom-metadata
+          emptyDir: {}
       restartPolicy: Never
-  backoffLimit: 0
+  backoffLimit: 2

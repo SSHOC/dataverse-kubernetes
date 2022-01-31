@@ -5,5 +5,5 @@ kind: Kustomization
 bases:
   - ../demo
 
-resources:
-  - ingress.yaml
+# resources:
+#   - ingress.yaml

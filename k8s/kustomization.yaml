@@ -6,7 +6,7 @@ bases:
   - dataverse
 
 images:
-  - name: iqss/dataverse-k8s
-    newTag: "4.20"
-  - name: iqss/solr-k8s
-    newTag: "4.20"
+  - name: sshoc/dataverse-k8s
+    newTag: "5.9"
+  - name: sshoc/solr-k8s
+    newTag: "5.9"

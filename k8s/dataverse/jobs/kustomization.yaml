@@ -3,3 +3,7 @@ kind: Kustomization
 
 resources:
   - bootstrap.yaml
+
+images:
+  - name: sshoc/dataverse-k8s
+    newTag: "5.9"

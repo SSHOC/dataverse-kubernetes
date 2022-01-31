@@ -5,7 +5,7 @@ metadata:
   name: solr
   labels:
     app.kubernetes.io/name: solr
-    app.kubernetes.io/version: "4.20"
+    app.kubernetes.io/version: "8.9.0"
     app.kubernetes.io/component: searchindex
     app.kubernetes.io/part-of: dataverse
     app.kubernetes.io/managed-by: kubectl
@@ -26,20 +26,21 @@ spec:
     spec:
       containers:
         - name: solr
-          image: iqss/solr-k8s
+          image: sshoc/solr-k8s:5.9
+          imagePullPolicy: Always
           resources:
             requests:
-              memory: "2Gi"
+              memory: 2Gi
             limits:
-              memory: "4Gi"
+              memory: 4Gi
           ports:
             - name: index
               containerPort: 8983
           volumeMounts:
             - name: data
-              mountPath: /opt/solr/server/solr/collection1/data
+              mountPath: /var/solr/data/collection1/data
             - name: schema
-              mountPath: /schema
+              mountPath: /var/solr/data/schema
           env:
             - name: SOLR_PORT  # Otherwise, this is wrongfully set by K8s.
               value: "8983"
@@ -57,15 +58,17 @@ spec:
             httpGet:
               path: /solr/collection1/admin/ping
               port: index
-        - name: schema-sidecar
-          image: iqss/solr-k8s
-          command: ["/tini", "--", "/scripts/schema/sidecar.sh"]
+        # - name: schema-sidecar
+        - name: reindex-webhook-sidecar
+          image: sshoc/solr-k8s:5.9
+          imagePullPolicy: Always
+          command: ["/var/solr/data/tini", "--", "/var/solr/data/scripts/schema/sidecar.sh"]
           ports:
             - name: webhook
               containerPort: 9000
           volumeMounts:
             - name: schema
-              mountPath: "/schema"
+              mountPath: /var/solr/data/schema
           readinessProbe:
             initialDelaySeconds: 15
             periodSeconds: 20
@@ -81,20 +84,21 @@ spec:
             - name: data
               mountPath: /data
         - name: schema-init
-          image: iqss/solr-k8s
-          command: ["/scripts/schema/init.sh"]
+          image: sshoc/solr-k8s:5.9
+          imagePullPolicy: Always
+          command: ["/var/solr/data/scripts/schema/init.sh"]
           volumeMounts:
             - name: schema
-              mountPath: /schema
+              mountPath: /var/solr/data/schema
             - name: api-secret
-              mountPath: "/scripts/schema/api"
+              mountPath: "/var/solr/data/scripts/schema/api"
               readOnly: true
       volumes:
         - name: data
           persistentVolumeClaim:
             claimName: solr
         - name: schema
-          emptyDir: {}
+          emptyDir: {} # No PV needed: EmptyDir is ok, because only the solr main/core image and the sidecar image will need access to it. At pod-regeneration, contents (schema.xml) will be re-generated too.
         - name: api-secret
           secret:
             secretName: dataverse-api
